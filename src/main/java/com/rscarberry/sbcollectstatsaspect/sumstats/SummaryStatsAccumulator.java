@@ -2,24 +2,31 @@ package com.rscarberry.sbcollectstatsaspect.sumstats;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.math3.stat.descriptive.StatisticalSummary;
-import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.BiConsumer;
 
 @Component
 @Slf4j
 public class SummaryStatsAccumulator {
 
-    private Map<String, StatsContainer> statsMap = new ConcurrentHashMap<>();
+    private Map<String, SummaryStatsContainer> statsMap = new ConcurrentHashMap<>();
+    private List<BiConsumer<String, SummaryStatsContainer>> summaryStatsConsumers = new ArrayList<>();
+
+    public void addSummaryStatsConsumer(BiConsumer<String, SummaryStatsContainer> consumer) {
+        summaryStatsConsumers.add(consumer);
+    }
 
     public void addStats(String key, boolean success, long count, long latency) {
         statsMap.compute(key, (k, statsContainer) -> {
             if (statsContainer == null) {
-                statsContainer = new StatsContainer();
+                statsContainer = new SummaryStatsContainer();
             }
             statsContainer.registerSuccessOrFailure(success);
             if (success) {
@@ -33,17 +40,18 @@ public class SummaryStatsAccumulator {
     @Scheduled(fixedDelay = 60000, initialDelay = 60000)
     public void logStats() {
         // Create a copy of the stats map sorted by key
-        Map<String, StatsContainer> statsMapCopy = new TreeMap<>();
+        Map<String, SummaryStatsContainer> statsMapCopy = new TreeMap<>();
         // Copy contents of stats map to the copy in a threadsafe way.
         statsMap.replaceAll((key, statsContainer) -> {
             statsMapCopy.put(key, statsContainer);
-            return new StatsContainer();
+            return new SummaryStatsContainer();
         });
+        var consumers = summaryStatsConsumers.toArray(new BiConsumer[0]);
         // Now, do the actual work.
         statsMapCopy.entrySet()
                 .forEach(entry -> {
                     String key = entry.getKey();
-                    StatsContainer statsContainer = entry.getValue();
+                    SummaryStatsContainer statsContainer = entry.getValue();
                     StatisticalSummary countSummary = statsContainer.getCountStatistics().getSummary();
                     StatisticalSummary latencySummary = statsContainer.getLatencyStatistics().getSummary();
                     long successCount = statsContainer.getSuccessCount();
@@ -54,53 +62,17 @@ public class SummaryStatsAccumulator {
                             statsString(latencySummary),
                             successCount,
                             failureCount);
+                    // Forward to consumers, if any.
+                    for (var consumer: consumers) {
+                        ((BiConsumer<String, SummaryStatsContainer>) consumer).accept(key, statsContainer);
+                    }
                 });
     }
 
-    private static String statsString(StatisticalSummary statisticalSummary) {
+    public static String statsString(StatisticalSummary statisticalSummary) {
         return String.format("minimum = %d, maximum = %d, mean = %.2f",
                 ((long) statisticalSummary.getMin()),
                 ((long) statisticalSummary.getMax()),
                 statisticalSummary.getMean());
-    }
-
-    private static class StatsContainer {
-
-        private SummaryStatistics countStatistics = new SummaryStatistics();
-        private SummaryStatistics latencyStatistics = new SummaryStatistics();
-        private long successCount;
-        private long failureCount;
-
-        public SummaryStatistics getCountStatistics() {
-            return countStatistics;
-        }
-
-        public SummaryStatistics getLatencyStatistics() {
-            return latencyStatistics;
-        }
-
-        public long getSuccessCount() {
-            return successCount;
-        }
-
-        public long getFailureCount() {
-            return failureCount;
-        }
-
-        public void addCount(long count) {
-            countStatistics.addValue(count);
-        }
-
-        public void addLatency(long latency) {
-            latencyStatistics.addValue(latency);
-        }
-
-        public void registerSuccessOrFailure(boolean success) {
-            if (success) {
-                successCount++;
-            } else {
-                failureCount++;
-            }
-        }
     }
 }

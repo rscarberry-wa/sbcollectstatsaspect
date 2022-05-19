@@ -34,7 +34,7 @@ public class CollectStatsAspect {
             success = true;
             return proceed;
         } finally {
-            statsAccumulator.addStats(joinPoint.toLongString(), success, count, latency);
+            statsAccumulator.addStats(joinPoint.toShortString(), success, count, latency);
         }
     }
 

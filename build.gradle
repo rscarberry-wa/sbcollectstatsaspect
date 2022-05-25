@@ -18,6 +18,11 @@ repositories {
 	mavenCentral()
 }
 
+// So the plain jar isn't generated, just the fat one
+jar {
+	enabled = false
+}
+
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-aop'

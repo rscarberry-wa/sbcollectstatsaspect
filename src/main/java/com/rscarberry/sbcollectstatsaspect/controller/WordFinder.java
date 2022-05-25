@@ -24,20 +24,25 @@ public class WordFinder {
 
     public static final String INPUT_RESOURCE = "/war_and_peace.txt";
 
-    private Set<String> wordSet;
+    private final static Set<String> wordSet;
 
-    public WordFinder() {
-        InputStream inputStream = WordFinder.class.getResourceAsStream(INPUT_RESOURCE);
-        if (inputStream != null) {
-            try (BufferedReader br = new BufferedReader(new InputStreamReader(inputStream))) {
-                String[] words = br.lines().collect(Collectors.joining("\n")).split("\\PL+");
-                wordSet = new HashSet<>();
-                for (String word: words) {
-                    wordSet.add(word);
+    static {
+        Set<String> tmpSet = new HashSet<>();
+        try {
+            InputStream inputStream = WordFinder.class.getResourceAsStream(INPUT_RESOURCE);
+            if (inputStream != null) {
+                try (BufferedReader br = new BufferedReader(new InputStreamReader(inputStream))) {
+                    String[] words = br.lines().collect(Collectors.joining("\n")).split("\\PL+");
+                    for (String word : words) {
+                        tmpSet.add(word);
+                    }
+                } catch (IOException e) {
+                    log.error("Failure reading War and Peace", e);
                 }
-            } catch (IOException e) {
-                e.printStackTrace();
             }
+        } finally {
+            wordSet = tmpSet;
+            log.info("{} unique words found in War and Peace", wordSet.size());
         }
     }
 
@@ -47,6 +52,7 @@ public class WordFinder {
         if (wordSet == null) {
             return Collections.emptyList();
         }
+        log.info("Finding words starting with: {}", prefix);
         return wordSet.stream().filter(w -> w.startsWith(prefix)).collect(Collectors.toList());
     }
 
@@ -58,5 +64,14 @@ public class WordFinder {
         }
         int intLength = Integer.parseInt(length);
         return wordSet.stream().filter(w -> w.length() == intLength).collect(Collectors.toList());
+    }
+
+    @CollectStats
+    @GetMapping("/containing/{value}")
+    public List<String> findWordsContaining(@PathVariable String value) {
+        if (wordSet == null || value.isBlank()) {
+            return Collections.emptyList();
+        }
+        return wordSet.stream().filter(w -> w.indexOf(value) >= 0).collect(Collectors.toList());
     }
 }

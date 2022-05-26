@@ -29,11 +29,11 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 	// Brings in actuator/prometheus metrics endpoint
 	implementation 'io.micrometer:micrometer-registry-prometheus'
-	implementation 'org.apache.commons:commons-math3:3.6.1'
 	// For swagger endpoints
 	implementation 'org.springdoc:springdoc-openapi-common:1.6.8'
 	implementation 'org.springdoc:springdoc-openapi-webflux-ui:1.6.8'
 	//
+	implementation 'org.apache.commons:commons-math3:3.6.1'
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'

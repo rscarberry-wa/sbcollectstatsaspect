@@ -14,8 +14,9 @@ api:
     version: 1.0.0
     title: Find Words
     description: Find words contained in the novel, War and Peace, by Leon Tolstoy
-    license: Driver's
-    licenceUrl: http://notgoingtofindit.com
+    termsOfService: Do whatever you want
+    license: Drivers
+    licenseUrl: http://notgoingtofindit.com
     externalDocDesc: MY WIKI PAGE
     externalDocUrl: MY WIKI URL
     contact:

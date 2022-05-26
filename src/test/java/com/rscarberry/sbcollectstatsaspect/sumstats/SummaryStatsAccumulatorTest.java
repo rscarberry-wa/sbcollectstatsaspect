@@ -16,8 +16,8 @@ class SummaryStatsAccumulatorTest {
         Random random = new Random(343984);
 
         for (int i=0; i<500; i++) {
-            long count = random.nextInt(10, 100);
-            long latency = random.nextInt(5, 50);
+            long count = 10 + random.nextInt(90);
+            long latency = 5 + random.nextInt(45);
             boolean success = random.nextDouble() < 0.05;
             accumulator.addStats(key, success, count, latency);
         }

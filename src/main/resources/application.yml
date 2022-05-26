@@ -1,26 +1,3 @@
-server.port: 8080
-server.error.include-message: always
-
-# springdoc:
-#   swagger-ui.path: /openapi/swagger-ui.html
-#   api-docs.path: /openapi/v3/api-docs
-#   packagesToScan: com.rscarberry.sbcollectstatsaspect.controller
-#   pathsToMatch: /**
-
-# api:
-#   common:
-#     version: 1.0.0
-#     title: Find Words
-#     description: Find words contained in the novel, War and Peace, by Leon Tolstoy
-#     license: Driver's
-#     licenceUrl: http://notgoingtofindit.com
-#     externalDocDesc: MY WIKI PAGE
-#     externalDocUrl: MY WIKI URL
-#     contact:
-#       name: NAME OF CONTACT
-#       url: URL TO CONTACT
-#       email: contact@mail.com
-
 logging:
   level:
     root: INFO

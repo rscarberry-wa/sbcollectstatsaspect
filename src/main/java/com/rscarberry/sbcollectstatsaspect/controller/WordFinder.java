@@ -2,6 +2,9 @@ package com.rscarberry.sbcollectstatsaspect.controller;
 
 import com.rscarberry.sbcollectstatsaspect.aspects.CollectStats;
 import lombok.extern.slf4j.Slf4j;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -63,12 +66,12 @@ public class WordFinder {
     @ApiResponses(value ={
         @ApiResponse(responseCode = "200", description = "No problems encountered")
     })
-    public List<String> findWordsStartingWith(@PathVariable String prefix) {
+    public Mono<List<String>> findWordsStartingWith(@PathVariable String prefix) {
         if (wordSet == null) {
-            return Collections.emptyList();
+            return Mono.empty();
         }
         log.info("Finding words starting with: {}", prefix);
-        return wordSet.stream().filter(w -> w.startsWith(prefix)).collect(Collectors.toList());
+        return Flux.fromIterable(wordSet).filter(w -> w.startsWith(prefix)).collectList();
     }
 
     @CollectStats
@@ -83,16 +86,19 @@ public class WordFinder {
     @ApiResponses(value ={
         @ApiResponse(responseCode = "200", description = "No problems encountered")
     })
-    public List<String> findWordsOfLength(@PathVariable int length) {
+    public Mono<List<String>> findWordsOfLength(@PathVariable int length) {
         if (wordSet == null) {
-            return Collections.emptyList();
+            return Mono.empty();
         }
         log.info("Finding words of length {}", length);
-        return wordSet.stream().filter(w -> w.length() == length).collect(Collectors.toList());
+        return Flux.fromIterable(wordSet).filter(w -> w.length() == length).collectList();
     }
 
     @CollectStats
-    @GetMapping("/containing/{value}")
+    @GetMapping(
+        value = "/containing/{value}",
+        produces = "application/json"
+        )
     @Operation(
         summary = "Find words containing a value",
         description = "Returns all the words in War and Peace that contain the specified string."
@@ -100,11 +106,11 @@ public class WordFinder {
     @ApiResponses(value ={
         @ApiResponse(responseCode = "200", description = "No problems encountered")
     })
-    public List<String> findWordsContaining(@PathVariable String value) {
+    public Mono<List<String>> findWordsContaining(@PathVariable String value) {
         if (wordSet == null || value.isBlank()) {
-            return Collections.emptyList();
+            return Mono.empty();
         }
         log.info("Finding words that contain {}", value);
-        return wordSet.stream().filter(w -> w.indexOf(value) >= 0).collect(Collectors.toList());
+        return Flux.fromIterable(wordSet).filter(w -> w.indexOf(value) >= 0).collectList();
     }
 }

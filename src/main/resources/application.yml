@@ -27,7 +27,7 @@ api:
 logging:
   level:
     root: INFO
-    com.rscarberry.sbcollectstatsaspect.controller: DEBUG
+    com.rscarberry.sbcollectstatsaspect: DEBUG
 
 management:
   endpoints:

@@ -15,14 +15,12 @@ import java.util.function.BiConsumer;
 @Component
 public class CustomMetrics implements BiConsumer<String, SummaryStatsContainer> {
 
-    private final SummaryStatsAccumulator summaryStatsAccumulator;
     private final MeterRegistry meterRegistry;
 
     private final Map<String, MetricsContainer> metricsMap = new ConcurrentHashMap<>();
 
     @Autowired
     public CustomMetrics(SummaryStatsAccumulator summaryStatsAccumulator, MeterRegistry meterRegistry) {
-        this.summaryStatsAccumulator = summaryStatsAccumulator;
         this.meterRegistry = meterRegistry;
         summaryStatsAccumulator.addSummaryStatsConsumer(this);
     }

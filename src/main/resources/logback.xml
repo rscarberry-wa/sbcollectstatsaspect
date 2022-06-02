@@ -10,12 +10,12 @@
         </encoder>
     </appender>
 
-<!--    <root level="INFO">-->
-<!--        <appender-ref ref="console" />-->
-<!--    </root>-->
-
-    <logger name="com.rscarberry.sbcollectstatsaspect.controller" level="DEBUG">
+    <root level="INFO">
         <appender-ref ref="console" />
-    </logger>
+    </root>
+
+    <!-- <logger name="com.rscarberry.sbcollectstatsaspect.controller" level="DEBUG">
+        <appender-ref ref="console" />
+    </logger> -->
 
 </configuration>

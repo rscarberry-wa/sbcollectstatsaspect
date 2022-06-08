@@ -2,6 +2,8 @@ package com.rscarberry.sbcollectstatsaspect.sumstats;
 
 import org.junit.jupiter.api.Test;
 
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+
 import java.util.Random;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -12,7 +14,7 @@ class SummaryStatsAccumulatorTest {
     void logStats() {
 
         String key = "logStats test";
-        SummaryStatsAccumulator accumulator = new SummaryStatsAccumulator();
+        SummaryStatsAccumulator accumulator = new SummaryStatsAccumulator(new SimpleMeterRegistry());
         Random random = new Random(343984);
 
         for (int i=0; i<500; i++) {

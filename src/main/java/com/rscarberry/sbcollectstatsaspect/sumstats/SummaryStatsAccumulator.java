@@ -2,10 +2,13 @@ package com.rscarberry.sbcollectstatsaspect.sumstats;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.math3.stat.descriptive.StatisticalSummary;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import io.micrometer.core.annotation.Timed;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,6 +23,13 @@ public class SummaryStatsAccumulator {
 
     private Map<String, SummaryStatsContainer> statsMap = new ConcurrentHashMap<>();
     private List<BiConsumer<String, SummaryStatsContainer>> summaryStatsConsumers = new ArrayList<>();
+
+    private Timer timer;
+
+    @Autowired
+    public SummaryStatsAccumulator(MeterRegistry meterRegistry) {
+        this.timer = meterRegistry.timer("logstats.execution", "id", "method_invocation");
+    }
 
     public void addSummaryStatsConsumer(BiConsumer<String, SummaryStatsContainer> consumer) {
         summaryStatsConsumers.add(consumer);
@@ -40,9 +50,9 @@ public class SummaryStatsAccumulator {
         });
     }
 
-    @Timed(value = "log_stats", longTask = true)
     @Scheduled(fixedDelay = 60000, initialDelay = 60000)
     public void logStats() {
+        this.timer.record(() -> {
         // Create a copy of the stats map sorted by key
         Map<String, SummaryStatsContainer> statsMapCopy = new TreeMap<>();
         // Copy contents of stats map to the copy in a threadsafe way.
@@ -71,6 +81,7 @@ public class SummaryStatsAccumulator {
                         ((BiConsumer<String, SummaryStatsContainer>) consumer).accept(key, statsContainer);
                     }
                 });
+            });
     }
 
     public static String statsString(StatisticalSummary statisticalSummary) {

@@ -5,6 +5,8 @@ import org.apache.commons.math3.stat.descriptive.StatisticalSummary;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import io.micrometer.core.annotation.Timed;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +30,7 @@ public class SummaryStatsAccumulator {
             if (statsContainer == null) {
                 statsContainer = new SummaryStatsContainer();
             }
+            log.info("..... addStats {}: success = {}, count = {}, latency = {}", key, success, count, latency);
             statsContainer.registerSuccessOrFailure(success);
             if (success) {
                 statsContainer.addCount(count);
@@ -37,6 +40,7 @@ public class SummaryStatsAccumulator {
         });
     }
 
+    @Timed(value = "log_stats", longTask = true)
     @Scheduled(fixedDelay = 60000, initialDelay = 60000)
     public void logStats() {
         // Create a copy of the stats map sorted by key

@@ -3,10 +3,13 @@ package com.rscarberry.sbcollectstatsaspect.micrometer;
 import com.rscarberry.sbcollectstatsaspect.sumstats.SummaryStatsAccumulator;
 import com.rscarberry.sbcollectstatsaspect.sumstats.SummaryStatsContainer;
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Tag;
+
 import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
@@ -45,14 +48,23 @@ public class CustomMetrics implements BiConsumer<String, SummaryStatsContainer> 
         private final AtomicLong failureGauge;
 
         private MetricsContainer(String key, MeterRegistry meterRegistry) {
-            minCountGauge = meterRegistry.gauge(String.format("%s_min_count", key), new AtomicLong());
-            maxCountGauge = meterRegistry.gauge(String.format("%s_max_count", key), new AtomicLong());
-            meanCountGauge = meterRegistry.gauge(String.format("%s_mean_count", key), new AtomicLong());
-            minLatencyGauge = meterRegistry.gauge(String.format("%s_min_latency", key), new AtomicLong());
-            maxLatencyGauge = meterRegistry.gauge(String.format("%s_max_latency", key), new AtomicLong());
-            meanLatencyGauge = meterRegistry.gauge(String.format("%s_mean_latency", key), new AtomicLong());
-            successGauge = meterRegistry.gauge(String.format("%s_successes", key), new AtomicLong());
-            failureGauge = meterRegistry.gauge(String.format("%s_failures", key), new AtomicLong());
+            // minCountGauge = meterRegistry.gauge(String.format("%s_min_count", key), new AtomicLong());
+            // maxCountGauge = meterRegistry.gauge(String.format("%s_max_count", key), new AtomicLong());
+            // meanCountGauge = meterRegistry.gauge(String.format("%s_mean_count", key), new AtomicLong());
+            // minLatencyGauge = meterRegistry.gauge(String.format("%s_min_latency", key), new AtomicLong());
+            // maxLatencyGauge = meterRegistry.gauge(String.format("%s_max_latency", key), new AtomicLong());
+            // meanLatencyGauge = meterRegistry.gauge(String.format("%s_mean_latency", key), new AtomicLong());
+            // successGauge = meterRegistry.gauge(String.format("%s_successes", key), new AtomicLong());
+            // failureGauge = meterRegistry.gauge(String.format("%s_failures", key), new AtomicLong());
+
+            minCountGauge = meterRegistry.gauge("log.stats", List.of(Tag.of("endpoint", key), Tag.of("id", "min_count")), new AtomicLong());
+            maxCountGauge = meterRegistry.gauge("log.stats", List.of(Tag.of("endpoint", key), Tag.of("id", "max_count")), new AtomicLong());
+            meanCountGauge = meterRegistry.gauge("log.stats", List.of(Tag.of("endpoint", key), Tag.of("id", "mean_count")), new AtomicLong());
+            minLatencyGauge = meterRegistry.gauge("log.stats", List.of(Tag.of("endpoint", key), Tag.of("id", "min_latency")), new AtomicLong());
+            maxLatencyGauge = meterRegistry.gauge("log.stats", List.of(Tag.of("endpoint", key), Tag.of("id", "max_latency")), new AtomicLong());
+            meanLatencyGauge = meterRegistry.gauge("log.stats", List.of(Tag.of("endpoint", key), Tag.of("id", "mean_latency")), new AtomicLong());
+            successGauge = meterRegistry.gauge("log.stats", List.of(Tag.of("endpoint", key), Tag.of("id", "successes")), new AtomicLong());
+            failureGauge = meterRegistry.gauge("log.stats", List.of(Tag.of("endpoint", key), Tag.of("id", "failures")), new AtomicLong());
         }
 
         public void update(SummaryStatsContainer summaryStatsContainer) {
@@ -66,6 +78,10 @@ public class CustomMetrics implements BiConsumer<String, SummaryStatsContainer> 
             meanLatencyGauge.set(Math.round(latencyStats.getMean()));
             successGauge.set(summaryStatsContainer.getSuccessCount());
             failureGauge.set(summaryStatsContainer.getFailureCount());
+        }
+
+        private static String micrometerKey(String key) {
+            return key.toLowerCase().replaceAll("_+", ".");
         }
     }
 }
